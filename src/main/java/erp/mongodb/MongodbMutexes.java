@@ -1,6 +1,7 @@
 package erp.mongodb;
 
 import erp.repository.Mutexes;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Set;
 
@@ -8,15 +9,20 @@ import java.util.Set;
  * @author zheng chengdong
  */
 public class MongodbMutexes<ID> implements Mutexes<ID> {
-    @Override
-    public boolean exists(ID id) {
-        "mutexes_"
-        String collectionName = "arp_repo_state_" + ettCls.getSimpleName();
-        Document cmd = new Document();
-        cmd.put("findAndModify", collectionName);
-        Document query = new Document();
-        query.put("_id", id);
-        return false;
+
+    private MongoTemplate mongoTemplate;
+
+    private boolean mock;
+
+    private String entityType;
+
+    public MongodbMutexes(MongoTemplate mongoTemplate, String entityType) {
+        if (mongoTemplate == null) {
+            mock = true;
+            return;
+        }
+        this.mongoTemplate = mongoTemplate;
+        this.entityType = entityType;
     }
 
     @Override
