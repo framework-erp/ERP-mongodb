@@ -37,6 +37,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         mockStore = new MemStore<E, ID>();
     }
 
+    @Override
     public E load(ID id) {
         if (isMock()) {
             return mockStore.load(id);
@@ -48,6 +49,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         return mockStore != null;
     }
 
+    @Override
     public void save(ID id, E entity) {
         if (isMock()) {
             mockStore.save(id, entity);
@@ -56,6 +58,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         mongoTemplate.save(entity);
     }
 
+    @Override
     public void saveAll(Map<Object, Object> entitiesToInsert, Map<Object, ProcessEntity> entitiesToUpdate) {
         if (isMock()) {
             mockStore.saveAll(entitiesToInsert, entitiesToUpdate);
@@ -71,6 +74,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         }
     }
 
+    @Override
     public void removeAll(Set<Object> ids) {
         if (isMock()) {
             mockStore.removeAll(ids);
