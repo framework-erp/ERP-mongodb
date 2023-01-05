@@ -26,17 +26,17 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
     }
 
     @Override
-    public int lock(ID id, String s) {
+    public int lock(ID id, String processName) {
         return 0;
     }
 
     @Override
-    public boolean newAndLock(ID id, String s) {
+    public boolean newAndLock(ID id, String processName) {
         return false;
     }
 
     @Override
-    public void unlockAll(Set<Object> set) {
+    public void unlockAll(Set<Object> ids) {
 
     }
 
@@ -46,7 +46,7 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
     }
 
     @Override
-    public void removeAll(Set<Object> set) {
+    public void removeAll(Set<Object> ids) {
 
     }
 }
