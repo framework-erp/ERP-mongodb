@@ -5,8 +5,6 @@ import erp.repository.Store;
 import erp.repository.impl.MemStore;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,19 +16,16 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     private Class<E> entityClass;
 
+    public void setEntityClass(Class<E> entityClass) {
+        this.entityClass = entityClass;
+    }
+
     public MongodbStore(MongoTemplate mongoTemplate) {
         if (mongoTemplate == null) {
             initAsMock();
             return;
         }
         this.mongoTemplate = mongoTemplate;
-        Type genType = getClass().getGenericSuperclass();
-        Type paramsType = ((ParameterizedType) genType).getActualTypeArguments()[0];
-        try {
-            entityClass = (Class<E>) Class.forName(paramsType.getTypeName());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("can not parse entity type", e);
-        }
     }
 
     private void initAsMock() {
