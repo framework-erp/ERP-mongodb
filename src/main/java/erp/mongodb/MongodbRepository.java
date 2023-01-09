@@ -15,16 +15,36 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     private Class<E> entityClass;
     private MongoTemplate mongoTemplate;
 
-    public MongodbRepository(MongoTemplate mongoTemplate) {
+    public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityType) {
+        this(mongoTemplate, Long.MAX_VALUE, entityType);
+    }
+
+    public MongodbRepository(MongoTemplate mongoTemplate, long maxLockTime, Class<E> entityType) {
+        this(mongoTemplate, new MongodbStore<>(mongoTemplate), new MongodbMutexes<>(mongoTemplate, maxLockTime), entityType);
+        ((MongodbMutexes<ID>) mutexes).setCollectionName(entityType.getName());
+    }
+
+    public MongodbRepository(MongoTemplate mongoTemplate, Mutexes<ID> mutexes, Class<E> entityType) {
+        this(mongoTemplate, new MongodbStore<>(mongoTemplate), mutexes, entityType);
+    }
+
+    private MongodbRepository(MongoTemplate mongoTemplate, MongodbStore<E, ID> store, Mutexes<ID> mutexes, Class<E> entityType) {
+        super(store, mutexes, entityType);
+        this.entityClass = entityType;
+        store.setEntityClass(entityClass);
+        this.mongoTemplate = mongoTemplate;
+    }
+
+    protected MongodbRepository(MongoTemplate mongoTemplate) {
         this(mongoTemplate, Long.MAX_VALUE);
     }
 
-    public MongodbRepository(MongoTemplate mongoTemplate, long maxLockTime) {
+    protected MongodbRepository(MongoTemplate mongoTemplate, long maxLockTime) {
         this(mongoTemplate, new MongodbStore<>(mongoTemplate), new MongodbMutexes<>(mongoTemplate, maxLockTime));
         ((MongodbMutexes<ID>) mutexes).setCollectionName(entityType);
     }
 
-    public MongodbRepository(MongoTemplate mongoTemplate, Mutexes<ID> mutexes) {
+    protected MongodbRepository(MongoTemplate mongoTemplate, Mutexes<ID> mutexes) {
         this(mongoTemplate, new MongodbStore<>(mongoTemplate), mutexes);
     }
 
