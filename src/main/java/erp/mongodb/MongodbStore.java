@@ -45,9 +45,9 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
     }
 
     @Override
-    public void save(ID id, E entity) {
+    public void insert(ID id, E entity) {
         if (isMock()) {
-            mockStore.save(id, entity);
+            mockStore.insert(id, entity);
             return;
         }
         mongoTemplate.save(entity);
