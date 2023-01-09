@@ -60,15 +60,24 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     }
 
     public long count() {
+        if (mongoTemplate == null) {
+            return 0;
+        }
         return mongoTemplate.count(new Query(), entityClass);
     }
 
     public List<E> queryAllByField(String fieldName, Object fieldValue) {
+        if (mongoTemplate == null) {
+            return null;
+        }
         Query query = query(where(fieldName).is(fieldValue));
         return mongoTemplate.find(query, entityClass);
     }
 
     public List<ID> queryAllIds() {
+        if (mongoTemplate == null) {
+            return null;
+        }
         Query query = new Query();
         query.fields().include();
         List<E> entityList = mongoTemplate.find(query, entityClass);
