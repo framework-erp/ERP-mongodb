@@ -16,10 +16,6 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     private Class<E> entityClass;
 
-    public void setEntityClass(Class<E> entityClass) {
-        this.entityClass = entityClass;
-    }
-
     public MongodbStore(MongoTemplate mongoTemplate) {
         if (mongoTemplate == null) {
             initAsMock();
@@ -81,5 +77,9 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
                 mongoTemplate.remove(entity);
             }
         }
+    }
+
+    public void setEntityClass(Class<E> entityClass) {
+        this.entityClass = entityClass;
     }
 }
