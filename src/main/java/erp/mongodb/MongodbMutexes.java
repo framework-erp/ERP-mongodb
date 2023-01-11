@@ -80,6 +80,9 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     @Override
     public void unlockAll(Set<Object> ids) {
+        if (mock) {
+            return;
+        }
         for (Object id : ids) {
             Query query = query(where("_id").is(id));
             Update update = new Update();
@@ -90,6 +93,9 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     @Override
     public String getLockProcess(ID id) {
+        if (mock) {
+            return null;
+        }
         Mutex<ID> mutex = mongoTemplate.findById(id, Mutex.class, collectionName);
         if (mutex == null) {
             return null;
@@ -99,6 +105,9 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     @Override
     public void removeAll(Set<Object> ids) {
+        if (mock) {
+            return;
+        }
         for (Object id : ids) {
             Query query = query(where("_id").is(id));
             mongoTemplate.remove(query, collectionName);
