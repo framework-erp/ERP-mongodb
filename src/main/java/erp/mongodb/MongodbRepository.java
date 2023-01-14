@@ -16,7 +16,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     private MongoTemplate mongoTemplate;
 
     public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityType) {
-        this(mongoTemplate, Long.MAX_VALUE, entityType);
+        this(mongoTemplate, 30000, entityType);
     }
 
     public MongodbRepository(MongoTemplate mongoTemplate, long maxLockTime, Class<E> entityType) {
@@ -36,7 +36,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     }
 
     protected MongodbRepository(MongoTemplate mongoTemplate) {
-        this(mongoTemplate, Long.MAX_VALUE);
+        this(mongoTemplate, 30000);
     }
 
     protected MongodbRepository(MongoTemplate mongoTemplate, long maxLockTime) {
