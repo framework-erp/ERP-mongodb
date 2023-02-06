@@ -11,9 +11,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InterfaceMongodbRepositoryImplementer {
-    public static <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate) {
+
+    private static Map<String, Object> itfTypeInstanceMap = new HashMap<>();
+
+    public static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate) {
+        if (itfTypeInstanceMap.containsKey(itfType.getName())) {
+            return (I) itfTypeInstanceMap.get(itfType.getName());
+        }
         String newTypeClsName = defineClass(itfType);
 
         Constructor constructor = null;
@@ -24,15 +32,19 @@ public class InterfaceMongodbRepositoryImplementer {
         }
         constructor.setAccessible(true);
         try {
-            return (I) constructor.newInstance(mongoTemplate);
+            I instance = (I) constructor.newInstance(mongoTemplate);
+            itfTypeInstanceMap.put(itfType.getName(), instance);
+            return instance;
         } catch (Exception e) {
             throw new RuntimeException("newInstance for " + newTypeClsName + " error", e);
         }
     }
 
-    public static <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate, long maxLockTime) {
+    public static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate, long maxLockTime) {
+        if (itfTypeInstanceMap.containsKey(itfType.getName())) {
+            return (I) itfTypeInstanceMap.get(itfType.getName());
+        }
         String newTypeClsName = defineClass(itfType);
-
         Constructor constructor = null;
         try {
             constructor = Class.forName(newTypeClsName).getDeclaredConstructor(MongoTemplate.class, long.class);
@@ -41,15 +53,19 @@ public class InterfaceMongodbRepositoryImplementer {
         }
         constructor.setAccessible(true);
         try {
-            return (I) constructor.newInstance(mongoTemplate, maxLockTime);
+            I instance = (I) constructor.newInstance(mongoTemplate, maxLockTime);
+            itfTypeInstanceMap.put(itfType.getName(), instance);
+            return instance;
         } catch (Exception e) {
             throw new RuntimeException("newInstance for " + newTypeClsName + " error", e);
         }
     }
 
-    public static <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate, Mutexes<Object> mutexes) {
+    public static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate, Mutexes<Object> mutexes) {
+        if (itfTypeInstanceMap.containsKey(itfType.getName())) {
+            return (I) itfTypeInstanceMap.get(itfType.getName());
+        }
         String newTypeClsName = defineClass(itfType);
-
         Constructor constructor = null;
         try {
             constructor = Class.forName(newTypeClsName).getDeclaredConstructor(MongoTemplate.class, Mutexes.class);
@@ -58,7 +74,9 @@ public class InterfaceMongodbRepositoryImplementer {
         }
         constructor.setAccessible(true);
         try {
-            return (I) constructor.newInstance(mongoTemplate, mutexes);
+            I instance = (I) constructor.newInstance(mongoTemplate, mutexes);
+            itfTypeInstanceMap.put(itfType.getName(), instance);
+            return instance;
         } catch (Exception e) {
             throw new RuntimeException("newInstance for " + newTypeClsName + " error", e);
         }
