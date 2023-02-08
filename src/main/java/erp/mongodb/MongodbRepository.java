@@ -13,7 +13,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 public class MongodbRepository<E, ID> extends Repository<E, ID> {
     private Class<E> entityClass;
-    private MongoTemplate mongoTemplate;
+    protected MongoTemplate mongoTemplate;
 
     public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityType) {
         this(mongoTemplate, 30000, entityType);
