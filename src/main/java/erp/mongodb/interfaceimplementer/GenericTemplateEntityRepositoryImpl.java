@@ -4,7 +4,7 @@ import erp.mongodb.MongodbRepository;
 import erp.repository.Mutexes;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
-public class GenericTemplateEntityRepositoryImpl extends MongodbRepository<TemplateEntity, Object> implements GenericTemplateEntityRepository<TemplateEntity, Object> {
+public class GenericTemplateEntityRepositoryImpl extends MongodbRepository<TemplateEntityImpl, Object> implements GenericTemplateEntityRepository<TemplateEntityImpl, Object> {
 
     public GenericTemplateEntityRepositoryImpl(MongoTemplate mongoTemplate) {
         super(mongoTemplate);
@@ -17,4 +17,5 @@ public class GenericTemplateEntityRepositoryImpl extends MongodbRepository<Templ
     public GenericTemplateEntityRepositoryImpl(MongoTemplate mongoTemplate, Mutexes<Object> mutexes) {
         super(mongoTemplate, mutexes);
     }
+
 }
