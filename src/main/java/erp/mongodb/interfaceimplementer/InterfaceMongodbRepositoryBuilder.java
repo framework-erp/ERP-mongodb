@@ -12,11 +12,15 @@ import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InterfaceMongodbRepositoryImplementer {
+public class InterfaceMongodbRepositoryBuilder {
 
     private static Map<String, Object> itfTypeInstanceMap = new HashMap<>();
 
-    public static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate) {
+    public static InterfaceMongodbRepositoryBuilder newBuilder() {
+        return new InterfaceMongodbRepositoryBuilder();
+    }
+
+    private static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate) {
         if (itfTypeInstanceMap.containsKey(itfType.getName())) {
             return (I) itfTypeInstanceMap.get(itfType.getName());
         }
@@ -37,7 +41,7 @@ public class InterfaceMongodbRepositoryImplementer {
         }
     }
 
-    public static synchronized <I> I instance(Class<I> itfType, Class entityType, Class idType, MongoTemplate mongoTemplate) {
+    private static synchronized <I> I instance(Class<I> itfType, Class entityType, Class idType, MongoTemplate mongoTemplate) {
         if (itfTypeInstanceMap.containsKey(itfType.getName())) {
             return (I) itfTypeInstanceMap.get(itfType.getName());
         }
@@ -58,7 +62,7 @@ public class InterfaceMongodbRepositoryImplementer {
         }
     }
 
-    public static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate, long maxLockTime) {
+    private static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate, long maxLockTime) {
         if (itfTypeInstanceMap.containsKey(itfType.getName())) {
             return (I) itfTypeInstanceMap.get(itfType.getName());
         }
@@ -79,7 +83,7 @@ public class InterfaceMongodbRepositoryImplementer {
         }
     }
 
-    public static synchronized <I> I instance(Class<I> itfType, Class entityType, Class idType, MongoTemplate mongoTemplate, long maxLockTime) {
+    private static synchronized <I> I instance(Class<I> itfType, Class entityType, Class idType, MongoTemplate mongoTemplate, long maxLockTime) {
         if (itfTypeInstanceMap.containsKey(itfType.getName())) {
             return (I) itfTypeInstanceMap.get(itfType.getName());
         }
@@ -100,7 +104,7 @@ public class InterfaceMongodbRepositoryImplementer {
         }
     }
 
-    public static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate, Mutexes<Object> mutexes) {
+    private static synchronized <I> I instance(Class<I> itfType, MongoTemplate mongoTemplate, Mutexes<Object> mutexes) {
         if (itfTypeInstanceMap.containsKey(itfType.getName())) {
             return (I) itfTypeInstanceMap.get(itfType.getName());
         }
@@ -121,7 +125,7 @@ public class InterfaceMongodbRepositoryImplementer {
         }
     }
 
-    public static synchronized <I> I instance(Class<I> itfType, Class entityType, Class idType, MongoTemplate mongoTemplate, Mutexes<Object> mutexes) {
+    private static synchronized <I> I instance(Class<I> itfType, Class entityType, Class idType, MongoTemplate mongoTemplate, Mutexes<Object> mutexes) {
         if (itfTypeInstanceMap.containsKey(itfType.getName())) {
             return (I) itfTypeInstanceMap.get(itfType.getName());
         }
@@ -295,6 +299,53 @@ public class InterfaceMongodbRepositoryImplementer {
             }
         }, ClassReader.EXPAND_FRAMES);
         return cw.toByteArray();
+    }
+
+    private Long maxLockTime;
+    private boolean genericItf;
+    private Class entityType;
+    private Class idType;
+    private Mutexes<Object> mutexes;
+
+    public InterfaceMongodbRepositoryBuilder maxLockTime(long maxLockTime) {
+        this.maxLockTime = maxLockTime;
+        return this;
+    }
+
+    public InterfaceMongodbRepositoryBuilder genericItfTypeValue(Class entityType, Class idType) {
+        genericItf = true;
+        this.entityType = entityType;
+        this.idType = idType;
+        return this;
+    }
+
+    public InterfaceMongodbRepositoryBuilder mutexes(Mutexes<Object> mutexes) {
+        this.mutexes = mutexes;
+        return this;
+    }
+
+    public <I> I build(Class<I> itfType, MongoTemplate mongoTemplate) {
+        if (genericItf) {
+            if (mutexes != null) {
+                return instance(itfType, entityType, idType, mongoTemplate, mutexes);
+            } else {
+                if (maxLockTime == null) {
+                    return instance(itfType, entityType, idType, mongoTemplate);
+                } else {
+                    return instance(itfType, entityType, idType, mongoTemplate, maxLockTime);
+                }
+            }
+        } else {
+            if (mutexes != null) {
+                return instance(itfType, mongoTemplate, mutexes);
+            } else {
+                if (maxLockTime == null) {
+                    return instance(itfType, mongoTemplate);
+                } else {
+                    return instance(itfType, mongoTemplate, maxLockTime);
+                }
+            }
+        }
     }
 
 }

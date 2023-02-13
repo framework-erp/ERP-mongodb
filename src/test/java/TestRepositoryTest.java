@@ -1,5 +1,5 @@
 import erp.ERP;
-import erp.mongodb.interfaceimplementer.InterfaceMongodbRepositoryImplementer;
+import erp.mongodb.interfaceimplementer.InterfaceMongodbRepositoryBuilder;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -9,8 +9,9 @@ public class TestRepositoryTest {
     @Test
     public void test() {
         TestEntityRepository<TestEntityImpl, String> testEntityRepository =
-                InterfaceMongodbRepositoryImplementer.
-                        instance(TestEntityRepository.class, TestEntityImpl.class, String.class, null);
+                InterfaceMongodbRepositoryBuilder.newBuilder()
+                        .genericItfTypeValue(TestEntityImpl.class, String.class)
+                        .build(TestEntityRepository.class, null);
         TestEntityImpl testEntity0 = ERP.go("test", () -> {
             TestEntityImpl testEntity = new TestEntityImpl("0");
             testEntityRepository.put(testEntity);
@@ -20,7 +21,8 @@ public class TestRepositoryTest {
         assertEquals(testEntity1.getId(), testEntity0.getId());
 
         TestEntityImplRepository testEntityImplRepository =
-                InterfaceMongodbRepositoryImplementer.instance(TestEntityImplRepository.class, null);
+                InterfaceMongodbRepositoryBuilder.newBuilder()
+                        .build(TestEntityImplRepository.class, null);
         TestEntityImpl testEntityImpl0 = ERP.go("test", () -> {
             TestEntityImpl testEntityImpl = new TestEntityImpl("1");
             testEntityImplRepository.put(testEntityImpl);
@@ -30,7 +32,8 @@ public class TestRepositoryTest {
         assertEquals(testEntityImpl1.getId(), testEntityImpl0.getId());
 
         TestEntityImplRepositoryExtendsCommon testEntityImplRepositoryExtendsCommon =
-                InterfaceMongodbRepositoryImplementer.instance(TestEntityImplRepositoryExtendsCommon.class, null);
+                InterfaceMongodbRepositoryBuilder.newBuilder()
+                        .build(TestEntityImplRepositoryExtendsCommon.class, null);
         TestEntityImpl testEntityImpl2 = ERP.go("test", () -> {
             TestEntityImpl testEntityImpl = new TestEntityImpl("2");
             testEntityImplRepositoryExtendsCommon.put(testEntityImpl);
@@ -40,7 +43,8 @@ public class TestRepositoryTest {
         assertEquals(testEntityImpl3.getId(), testEntityImpl2.getId());
 
         TestEntityImplRepositoryExtendsSuper testEntityImplRepositoryExtendsSuper =
-                InterfaceMongodbRepositoryImplementer.instance(TestEntityImplRepositoryExtendsSuper.class, null);
+                InterfaceMongodbRepositoryBuilder.newBuilder()
+                        .build(TestEntityImplRepositoryExtendsSuper.class, null);
         TestEntityImpl testEntityImpl4 = ERP.go("test", () -> {
             TestEntityImpl testEntityImpl = new TestEntityImpl("3");
             testEntityImplRepositoryExtendsSuper.put(testEntityImpl);
