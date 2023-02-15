@@ -29,7 +29,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     }
 
     private MongodbRepository(MongoTemplate mongoTemplate, MongodbStore<E, ID> store, Mutexes<ID> mutexes, Class<E> entityType) {
-        super(store, mutexes, entityType);
+        super(store, mutexes, entityType.getName());
         this.entityClass = entityType;
         store.setEntityClass(entityClass);
         this.mongoTemplate = mongoTemplate;
