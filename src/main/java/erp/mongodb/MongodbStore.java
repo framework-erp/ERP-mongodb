@@ -2,7 +2,7 @@ package erp.mongodb;
 
 import erp.process.ProcessEntity;
 import erp.repository.Store;
-import erp.repository.impl.MemStore;
+import erp.repository.impl.mem.MemStore;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Map;
