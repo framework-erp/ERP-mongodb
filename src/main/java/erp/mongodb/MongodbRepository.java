@@ -88,4 +88,13 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         return idList;
     }
 
+    public List<E> queryAllEntities() {
+        if (mongoTemplate == null) {
+            return null;
+        }
+        Query query = new Query();
+        List<E> entityList = mongoTemplate.find(query, entityClass);
+        return entityList;
+    }
+
 }
