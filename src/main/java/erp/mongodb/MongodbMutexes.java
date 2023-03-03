@@ -35,6 +35,11 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
         this.maxLockTime = maxLockTime;
     }
 
+    public MongodbMutexes(MongoTemplate mongoTemplate, long maxLockTime, String entityType) {
+        this(mongoTemplate, maxLockTime);
+        setCollectionName(entityType);
+    }
+
     public void setCollectionName(String entityType) {
         this.collectionName = "mutexes_" + entityType;
     }
