@@ -24,6 +24,11 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         this.mongoTemplate = mongoTemplate;
     }
 
+    public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass) {
+        this(mongoTemplate);
+        this.entityClass = entityClass;
+    }
+
     private void initAsMock() {
         mockStore = new MemStore<E, ID>();
     }
