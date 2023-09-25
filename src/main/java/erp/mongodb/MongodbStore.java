@@ -5,8 +5,12 @@ import erp.repository.Store;
 import erp.repository.impl.mem.MemStore;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 public class MongodbStore<E, ID> implements Store<E, ID> {
 
@@ -16,12 +20,38 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     private Class<E> entityClass;
 
+    private String docKeyName;
+
     public MongodbStore(MongoTemplate mongoTemplate) {
         if (mongoTemplate == null) {
             initAsMock();
             return;
         }
         this.mongoTemplate = mongoTemplate;
+
+        //取名称为“id”的field作为id field，如果不存在 “id” field，那么取第一个field作为id field
+        Field idField = null;
+        Field[] fields = entityClass.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.getName().equals("id")) {
+                idField = field;
+                break;
+            }
+        }
+        if (idField == null) {
+            if (fields.length > 0) {
+                idField = fields[0];
+            } else {
+                throw new RuntimeException("can not find id field in entity class " + entityClass.getName());
+            }
+        }
+        String idFieldName = idField.getName();
+        if (idFieldName.equals("id")) {
+            docKeyName = "_id";
+        } else {
+            docKeyName = idFieldName;
+        }
+
     }
 
     public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass) {
@@ -38,7 +68,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         if (isMock()) {
             return mockStore.load(id);
         }
-        return mongoTemplate.findById(id, entityClass);
+        return mongoTemplate.findOne(query(where(docKeyName).is(id)), entityClass);
     }
 
     private boolean isMock() {
@@ -51,7 +81,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             mockStore.insert(id, entity);
             return;
         }
-        mongoTemplate.save(entity);
+        mongoTemplate.insert(entity);
     }
 
     @Override
@@ -64,8 +94,8 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             mongoTemplate.insert(entitiesToInsert.values(), entityClass);
         }
         if (entitiesToUpdate != null) {
-            for (ProcessEntity processEntity : entitiesToUpdate.values()) {
-                mongoTemplate.save(processEntity.getEntity());
+            for (Map.Entry<Object, ProcessEntity> entry : entitiesToUpdate.entrySet()) {
+                mongoTemplate.findAndReplace(query(where(docKeyName).is(entry.getKey())), entry.getValue().getEntity());
             }
         }
     }
@@ -79,7 +109,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         for (Object id : ids) {
             E entity = load((ID) id);
             if (entity != null) {
-                mongoTemplate.remove(entity);
+                mongoTemplate.remove(query(where(docKeyName).is(id)), entityClass);
             }
         }
     }
