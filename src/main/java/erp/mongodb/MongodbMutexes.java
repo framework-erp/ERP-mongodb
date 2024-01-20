@@ -26,17 +26,13 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     private CurrentTimeMillisClock clock = CurrentTimeMillisClock.getInstance();
 
-    public MongodbMutexes(MongoTemplate mongoTemplate, long maxLockTime) {
+    public MongodbMutexes(MongoTemplate mongoTemplate, String entityType, long maxLockTime) {
         if (mongoTemplate == null) {
             mock = true;
             return;
         }
         this.mongoTemplate = mongoTemplate;
         this.maxLockTime = maxLockTime;
-    }
-
-    public MongodbMutexes(MongoTemplate mongoTemplate, long maxLockTime, String entityType) {
-        this(mongoTemplate, maxLockTime);
         setCollectionName(entityType);
     }
 

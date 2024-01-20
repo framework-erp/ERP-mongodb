@@ -22,12 +22,13 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     private String docKeyName;
 
-    public MongodbStore(MongoTemplate mongoTemplate) {
+    public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass) {
         if (mongoTemplate == null) {
             initAsMock();
             return;
         }
         this.mongoTemplate = mongoTemplate;
+        this.entityClass = entityClass;
 
         //取名称为“id”的field作为id field，如果不存在 “id” field，那么取第一个field作为id field
         Field idField = null;
@@ -52,11 +53,6 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             docKeyName = idFieldName;
         }
 
-    }
-
-    public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass) {
-        this(mongoTemplate);
-        this.entityClass = entityClass;
     }
 
     private void initAsMock() {
