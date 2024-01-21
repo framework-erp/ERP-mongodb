@@ -18,6 +18,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         super(entityClass.getName());
         this.store = new MongodbStore<>(mongoTemplate, entityClass);
         this.mutexes = new MongodbMutexes(mongoTemplate, entityClass.getName(), 30000L);
+        this.mongoTemplate = mongoTemplate;
     }
 
     protected MongodbRepository(MongoTemplate mongoTemplate) {
@@ -28,6 +29,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         }
         this.store = new MongodbStore<>(mongoTemplate, entityClass);
         this.mutexes = new MongodbMutexes(mongoTemplate, entityType, 30000L);
+        this.mongoTemplate = mongoTemplate;
     }
 
     public long count() {
