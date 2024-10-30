@@ -19,6 +19,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         this.store = new MongodbStore<>(mongoTemplate, entityClass);
         this.mutexes = new MongodbMutexes(mongoTemplate, entityClass.getName(), 30000L);
         this.mongoTemplate = mongoTemplate;
+        this.entityClass = entityClass;
     }
 
     protected MongodbRepository(MongoTemplate mongoTemplate) {
