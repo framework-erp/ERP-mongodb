@@ -11,25 +11,29 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 public class MongodbRepository<E, ID> extends Repository<E, ID> {
-    private Class<E> entityClass;
+    protected String collectionName;
     protected MongoTemplate mongoTemplate;
 
     public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityClass) {
-        super(entityClass.getName());
-        this.store = new MongodbStore<>(mongoTemplate, entityClass);
-        this.mutexes = new MongodbMutexes(mongoTemplate, entityClass.getName(), 30000L);
+        super(entityClass);
+        this.collectionName = entityClass.getSimpleName();
+        this.store = new MongodbStore<>(mongoTemplate, entityClass, collectionName);
+        this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
-        this.entityClass = entityClass;
+    }
+
+    public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityClass, String repositoryName) {
+        super(entityClass, repositoryName);
+        this.collectionName = repositoryName;
+        this.store = new MongodbStore<>(mongoTemplate, entityClass, collectionName);
+        this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
+        this.mongoTemplate = mongoTemplate;
     }
 
     protected MongodbRepository(MongoTemplate mongoTemplate) {
-        try {
-            this.entityClass = (Class<E>) Class.forName(entityType);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("can not parse entity type", e);
-        }
-        this.store = new MongodbStore<>(mongoTemplate, entityClass);
-        this.mutexes = new MongodbMutexes(mongoTemplate, entityType, 30000L);
+        this.collectionName = entityType.getSimpleName();
+        this.store = new MongodbStore<>(mongoTemplate, entityType, collectionName);
+        this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
     }
 
@@ -37,7 +41,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         if (mongoTemplate == null) {
             return 0;
         }
-        return mongoTemplate.count(new Query(), entityClass);
+        return mongoTemplate.count(new Query(), collectionName);
     }
 
     public List<E> queryAllByField(String fieldName, Object fieldValue) {
@@ -45,7 +49,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
             return null;
         }
         Query query = query(where(fieldName).is(fieldValue));
-        return mongoTemplate.find(query, entityClass);
+        return mongoTemplate.find(query, entityType, collectionName);
     }
 
     public List<ID> queryAllIds() {
@@ -54,7 +58,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         }
         Query query = new Query();
         query.fields().include();
-        List<E> entityList = mongoTemplate.find(query, entityClass);
+        List<E> entityList = mongoTemplate.find(query, entityType, collectionName);
         List<ID> idList = new ArrayList<>();
         for (E entity : entityList) {
             idList.add(getId(entity));
@@ -67,8 +71,11 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
             return null;
         }
         Query query = new Query();
-        List<E> entityList = mongoTemplate.find(query, entityClass);
+        List<E> entityList = mongoTemplate.find(query, entityType, collectionName);
         return entityList;
     }
 
+    public String getCollectionName() {
+        return collectionName;
+    }
 }

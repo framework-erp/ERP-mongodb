@@ -20,15 +20,18 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     private Class<E> entityClass;
 
+    private String collectionName;
+
     private String docKeyName;
 
-    public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass) {
+    public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass, String collectionName) {
         if (mongoTemplate == null) {
             initAsMock();
             return;
         }
         this.mongoTemplate = mongoTemplate;
         this.entityClass = entityClass;
+        this.collectionName = collectionName;
 
         //取名称为“id”的field作为id field，如果不存在 “id” field，那么取第一个field作为id field
         Field idField = null;
@@ -64,7 +67,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         if (isMock()) {
             return mockStore.load(id);
         }
-        return mongoTemplate.findOne(query(where(docKeyName).is(id)), entityClass);
+        return mongoTemplate.findOne(query(where(docKeyName).is(id)), entityClass, collectionName);
     }
 
     private boolean isMock() {
@@ -77,7 +80,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             mockStore.insert(id, entity);
             return;
         }
-        mongoTemplate.insert(entity);
+        mongoTemplate.insert(entity, collectionName);
     }
 
     @Override
@@ -87,11 +90,12 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             return;
         }
         if (entitiesToInsert != null) {
-            mongoTemplate.insert(entitiesToInsert.values(), entityClass);
+            mongoTemplate.insert(entitiesToInsert.values(), collectionName);
         }
         if (entitiesToUpdate != null) {
             for (Map.Entry<Object, ProcessEntity> entry : entitiesToUpdate.entrySet()) {
-                mongoTemplate.findAndReplace(query(where(docKeyName).is(entry.getKey())), entry.getValue().getEntity());
+                mongoTemplate.findAndReplace(query(where(docKeyName).is(entry.getKey())), entry.getValue().getEntity(),
+                        collectionName);
             }
         }
     }
@@ -105,7 +109,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         for (Object id : ids) {
             E entity = load((ID) id);
             if (entity != null) {
-                mongoTemplate.remove(query(where(docKeyName).is(id)), entityClass);
+                mongoTemplate.remove(query(where(docKeyName).is(id)), entityClass, collectionName);
             }
         }
     }
