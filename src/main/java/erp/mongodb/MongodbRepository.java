@@ -1,5 +1,6 @@
 package erp.mongodb;
 
+import erp.AppContext;
 import erp.repository.Repository;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -20,6 +21,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         this.store = new MongodbStore<>(mongoTemplate, entityClass, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
+        AppContext.registerRepository(this);
     }
 
     public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityClass, String repositoryName) {
@@ -28,6 +30,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         this.store = new MongodbStore<>(mongoTemplate, entityClass, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
+        AppContext.registerRepository(this);
     }
 
     protected MongodbRepository(MongoTemplate mongoTemplate) {
@@ -35,6 +38,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
         this.store = new MongodbStore<>(mongoTemplate, entityType, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
+        AppContext.registerRepository(this);
     }
 
     public long count() {
