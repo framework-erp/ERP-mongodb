@@ -3,7 +3,10 @@ package erp.mongodb;
 import erp.process.ProcessEntity;
 import erp.repository.Store;
 import erp.repository.impl.mem.MemStore;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.IndexOperations;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -54,6 +57,10 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             docKeyName = "_id";
         } else {
             docKeyName = idFieldName;
+            //创建索引
+            IndexOperations indexOps = mongoTemplate.indexOps(collectionName);
+            Index index = new Index().on(idFieldName, Sort.Direction.ASC).unique();
+            indexOps.ensureIndex(index);
         }
 
     }
@@ -117,4 +124,5 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
     public void setEntityClass(Class<E> entityClass) {
         this.entityClass = entityClass;
     }
+
 }
