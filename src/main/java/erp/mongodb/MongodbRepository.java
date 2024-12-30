@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -17,7 +18,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
 
     protected MongodbRepository(MongoTemplate mongoTemplate) {
         this.collectionName = entityType.getSimpleName();
-        this.store = new MongodbStore<>(mongoTemplate, entityType, collectionName);
+        this.store = new MongodbStore<>(mongoTemplate, entityType, entityIDField, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
         AppContext.registerRepository(this);
@@ -26,7 +27,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     protected MongodbRepository(MongoTemplate mongoTemplate, String repositoryName) {
         super(repositoryName);
         this.collectionName = repositoryName;
-        this.store = new MongodbStore<>(mongoTemplate, entityType, collectionName);
+        this.store = new MongodbStore<>(mongoTemplate, entityType, entityIDField, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
         AppContext.registerRepository(this);
@@ -35,7 +36,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityClass) {
         super(entityClass);
         this.collectionName = entityClass.getSimpleName();
-        this.store = new MongodbStore<>(mongoTemplate, entityClass, collectionName);
+        this.store = new MongodbStore<>(mongoTemplate, entityClass, entityIDField, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
         AppContext.registerRepository(this);
@@ -44,7 +45,7 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityClass, String repositoryName) {
         super(entityClass, repositoryName);
         this.collectionName = repositoryName;
-        this.store = new MongodbStore<>(mongoTemplate, entityClass, collectionName);
+        this.store = new MongodbStore<>(mongoTemplate, entityClass, entityIDField, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
         this.mongoTemplate = mongoTemplate;
         AppContext.registerRepository(this);
@@ -70,11 +71,17 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
             return null;
         }
         Query query = new Query();
-        query.fields().include();
-        List<E> entityList = mongoTemplate.find(query, entityType, collectionName);
+        String docKeyName;
+        if (entityIDField.equals("id")) {
+            docKeyName = "_id";
+        } else {
+            docKeyName = entityIDField;
+        }
+        query.fields().include(docKeyName);
         List<ID> idList = new ArrayList<>();
-        for (E entity : entityList) {
-            idList.add(getId(entity));
+        List<Map> results = mongoTemplate.find(query, Map.class, collectionName);
+        for (Map result : results) {
+            idList.add((ID) result.get(docKeyName));
         }
         return idList;
     }

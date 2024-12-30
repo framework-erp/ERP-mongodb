@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexOperations;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,7 +26,7 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     private String docKeyName;
 
-    public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass, String collectionName) {
+    public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass, String idFieldName, String collectionName) {
         if (mongoTemplate == null) {
             initAsMock();
             return;
@@ -36,23 +35,6 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
         this.entityClass = entityClass;
         this.collectionName = collectionName;
 
-        //取名称为“id”的field作为id field，如果不存在 “id” field，那么取第一个field作为id field
-        Field idField = null;
-        Field[] fields = entityClass.getDeclaredFields();
-        for (Field field : fields) {
-            if (field.getName().equals("id")) {
-                idField = field;
-                break;
-            }
-        }
-        if (idField == null) {
-            if (fields.length > 0) {
-                idField = fields[0];
-            } else {
-                throw new RuntimeException("can not find id field in entity class " + entityClass.getName());
-            }
-        }
-        String idFieldName = idField.getName();
         if (idFieldName.equals("id")) {
             docKeyName = "_id";
         } else {
