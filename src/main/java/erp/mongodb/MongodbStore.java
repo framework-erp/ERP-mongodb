@@ -4,6 +4,7 @@ import erp.process.ProcessEntity;
 import erp.repository.Store;
 import erp.repository.impl.mem.MemStore;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexOperations;
@@ -82,10 +83,11 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             mongoTemplate.insert(entitiesToInsert.values(), collectionName);
         }
         if (entitiesToUpdate != null) {
+            BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.ORDERED, collectionName);
             for (Map.Entry<Object, ProcessEntity> entry : entitiesToUpdate.entrySet()) {
-                mongoTemplate.findAndReplace(query(where(docKeyName).is(entry.getKey())), entry.getValue().getEntity(),
-                        collectionName);
+                bulkOps.replaceOne(query(where(docKeyName).is(entry.getKey())), entry.getValue().getEntity());
             }
+            bulkOps.execute();
         }
     }
 
@@ -95,12 +97,11 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             mockStore.removeAll(ids);
             return;
         }
+        BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.ORDERED, collectionName);
         for (Object id : ids) {
-            E entity = load((ID) id);
-            if (entity != null) {
-                mongoTemplate.remove(query(where(docKeyName).is(id)), entityClass, collectionName);
-            }
+            bulkOps.remove(query(where(docKeyName).is(id)));
         }
+        bulkOps.execute();
     }
 
     public void setEntityClass(Class<E> entityClass) {

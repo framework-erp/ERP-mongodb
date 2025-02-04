@@ -1,6 +1,7 @@
 package erp.mongodb;
 
 import erp.repository.Mutexes;
+import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -84,12 +85,14 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
         if (mock) {
             return;
         }
+        BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.ORDERED, collectionName);
         for (Object id : ids) {
             Query query = query(where("_id").is(id));
             Update update = new Update();
             update.set("lock", false);
-            mongoTemplate.updateFirst(query, update, collectionName);
+            bulkOps.updateOne(query, update);
         }
+        bulkOps.execute();
     }
 
     @Override
@@ -109,9 +112,11 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
         if (mock) {
             return;
         }
+        BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.ORDERED, collectionName);
         for (Object id : ids) {
             Query query = query(where("_id").is(id));
-            mongoTemplate.remove(query, collectionName);
+            bulkOps.remove(query);
         }
+        bulkOps.execute();
     }
 }
