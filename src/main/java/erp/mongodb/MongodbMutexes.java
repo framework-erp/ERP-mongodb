@@ -82,7 +82,17 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     @Override
     public void unlockAll(Set<Object> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
         if (mock) {
+            return;
+        }
+        if (ids.size() == 1) {
+            Query query = query(where("_id").is(ids.iterator().next()));
+            Update update = new Update();
+            update.set("lock", false);
+            mongoTemplate.updateFirst(query, update, collectionName);
             return;
         }
         BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.ORDERED, collectionName);
@@ -109,7 +119,15 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     @Override
     public void removeAll(Set<Object> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
         if (mock) {
+            return;
+        }
+        if (ids.size() == 1) {
+            Query query = query(where("_id").is(ids.iterator().next()));
+            mongoTemplate.remove(query, collectionName);
             return;
         }
         BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.ORDERED, collectionName);

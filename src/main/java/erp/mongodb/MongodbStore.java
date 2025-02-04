@@ -79,10 +79,15 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
             mockStore.saveAll(entitiesToInsert, entitiesToUpdate);
             return;
         }
-        if (entitiesToInsert != null) {
+        if (entitiesToInsert != null && !entitiesToInsert.isEmpty()) {
             mongoTemplate.insert(entitiesToInsert.values(), collectionName);
         }
-        if (entitiesToUpdate != null) {
+        if (entitiesToUpdate != null && !entitiesToUpdate.isEmpty()) {
+            if (entitiesToUpdate.size() == 1) {
+                Map.Entry<Object, ProcessEntity> entry = entitiesToUpdate.entrySet().iterator().next();
+                mongoTemplate.findAndReplace(query(where(docKeyName).is(entry.getKey())), entry.getValue().getEntity(), collectionName);
+                return;
+            }
             BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.ORDERED, collectionName);
             for (Map.Entry<Object, ProcessEntity> entry : entitiesToUpdate.entrySet()) {
                 bulkOps.replaceOne(query(where(docKeyName).is(entry.getKey())), entry.getValue().getEntity());
@@ -93,8 +98,15 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     @Override
     public void removeAll(Set<Object> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
         if (isMock()) {
             mockStore.removeAll(ids);
+            return;
+        }
+        if (ids.size() == 1) {
+            mongoTemplate.remove(query(where(docKeyName).is(ids.iterator().next())), collectionName);
             return;
         }
         BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.ORDERED, collectionName);
