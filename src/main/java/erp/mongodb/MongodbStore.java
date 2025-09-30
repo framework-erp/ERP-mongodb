@@ -2,7 +2,6 @@ package erp.mongodb;
 
 import erp.process.ProcessEntity;
 import erp.repository.Store;
-import erp.repository.impl.mem.MemStore;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -19,8 +18,6 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     private MongoTemplate mongoTemplate;
 
-    private MemStore<E, ID> mockStore;
-
     private Class<E> entityClass;
 
     private String collectionName;
@@ -28,10 +25,6 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
     private String docKeyName;
 
     public MongodbStore(MongoTemplate mongoTemplate, Class<E> entityClass, String idFieldName, String collectionName) {
-        if (mongoTemplate == null) {
-            initAsMock();
-            return;
-        }
         this.mongoTemplate = mongoTemplate;
         this.entityClass = entityClass;
         this.collectionName = collectionName;
@@ -48,37 +41,18 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
 
     }
 
-    private void initAsMock() {
-        mockStore = new MemStore<E, ID>();
-    }
-
     @Override
     public E load(ID id) {
-        if (isMock()) {
-            return mockStore.load(id);
-        }
         return mongoTemplate.findOne(query(where(docKeyName).is(id)), entityClass, collectionName);
-    }
-
-    private boolean isMock() {
-        return mockStore != null;
     }
 
     @Override
     public void insert(ID id, E entity) {
-        if (isMock()) {
-            mockStore.insert(id, entity);
-            return;
-        }
         mongoTemplate.insert(entity, collectionName);
     }
 
     @Override
     public void saveAll(Map<Object, Object> entitiesToInsert, Map<Object, ProcessEntity> entitiesToUpdate) {
-        if (isMock()) {
-            mockStore.saveAll(entitiesToInsert, entitiesToUpdate);
-            return;
-        }
         if (entitiesToInsert != null && !entitiesToInsert.isEmpty()) {
             mongoTemplate.insert(entitiesToInsert.values(), collectionName);
         }
@@ -99,10 +73,6 @@ public class MongodbStore<E, ID> implements Store<E, ID> {
     @Override
     public void removeAll(Set<Object> ids) {
         if (ids == null || ids.isEmpty()) {
-            return;
-        }
-        if (isMock()) {
-            mockStore.removeAll(ids);
             return;
         }
         if (ids.size() == 1) {

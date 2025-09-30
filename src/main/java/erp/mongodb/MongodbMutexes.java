@@ -19,8 +19,6 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     private MongoTemplate mongoTemplate;
 
-    private boolean mock;
-
     private String collectionName;
 
     private long maxLockTime;
@@ -28,10 +26,6 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
     private CurrentTimeMillisClock clock = CurrentTimeMillisClock.getInstance();
 
     public MongodbMutexes(MongoTemplate mongoTemplate, String entityCollectionName, long maxLockTime) {
-        if (mongoTemplate == null) {
-            mock = true;
-            return;
-        }
         this.mongoTemplate = mongoTemplate;
         this.maxLockTime = maxLockTime;
         setCollectionName(entityCollectionName);
@@ -43,9 +37,6 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     @Override
     public int lock(ID id, String processName) {
-        if (mock) {
-            return 1;
-        }
         long currTime = clock.now();
         long unlockTime = currTime - maxLockTime;
         Query query = query(new Criteria().andOperator(where("id").is(id),
@@ -64,9 +55,6 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     @Override
     public boolean newAndLock(ID id, String processName) {
-        if (mock) {
-            return true;
-        }
         Mutex<ID> mutex = new Mutex<>();
         mutex.setId(id);
         mutex.setLock(true);
@@ -83,9 +71,6 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
     @Override
     public void unlockAll(Set<Object> ids) {
         if (ids == null || ids.isEmpty()) {
-            return;
-        }
-        if (mock) {
             return;
         }
         if (ids.size() == 1) {
@@ -107,9 +92,6 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
 
     @Override
     public String getLockProcess(ID id) {
-        if (mock) {
-            return null;
-        }
         Mutex<ID> mutex = mongoTemplate.findById(id, Mutex.class, collectionName);
         if (mutex == null) {
             return null;
@@ -120,9 +102,6 @@ public class MongodbMutexes<ID> implements Mutexes<ID> {
     @Override
     public void removeAll(Set<Object> ids) {
         if (ids == null || ids.isEmpty()) {
-            return;
-        }
-        if (mock) {
             return;
         }
         if (ids.size() == 1) {

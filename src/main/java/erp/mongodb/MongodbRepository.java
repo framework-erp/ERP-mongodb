@@ -2,6 +2,8 @@ package erp.mongodb;
 
 import erp.AppContext;
 import erp.repository.Repository;
+import erp.repository.impl.mem.MemMutexes;
+import erp.repository.impl.mem.MemStore;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -17,6 +19,12 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
     protected MongoTemplate mongoTemplate;
 
     protected MongodbRepository(MongoTemplate mongoTemplate) {
+        if (mongoTemplate == null) {
+            this.store = new MemStore<>();
+            this.mutexes = new MemMutexes<>();
+            AppContext.registerRepository(this);
+            return;
+        }
         this.collectionName = entityType.getSimpleName();
         this.store = new MongodbStore<>(mongoTemplate, entityType, entityIDField, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
@@ -26,6 +34,12 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
 
     protected MongodbRepository(MongoTemplate mongoTemplate, String repositoryName) {
         super(repositoryName);
+        if (mongoTemplate == null) {
+            this.store = new MemStore<>();
+            this.mutexes = new MemMutexes<>();
+            AppContext.registerRepository(this);
+            return;
+        }
         this.collectionName = repositoryName;
         this.store = new MongodbStore<>(mongoTemplate, entityType, entityIDField, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
@@ -35,6 +49,12 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
 
     public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityClass) {
         super(entityClass);
+        if (mongoTemplate == null) {
+            this.store = new MemStore<>();
+            this.mutexes = new MemMutexes<>();
+            AppContext.registerRepository(this);
+            return;
+        }
         this.collectionName = entityClass.getSimpleName();
         this.store = new MongodbStore<>(mongoTemplate, entityClass, entityIDField, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
@@ -44,6 +64,12 @@ public class MongodbRepository<E, ID> extends Repository<E, ID> {
 
     public MongodbRepository(MongoTemplate mongoTemplate, Class<E> entityClass, String repositoryName) {
         super(entityClass, repositoryName);
+        if (mongoTemplate == null) {
+            this.store = new MemStore<>();
+            this.mutexes = new MemMutexes<>();
+            AppContext.registerRepository(this);
+            return;
+        }
         this.collectionName = repositoryName;
         this.store = new MongodbStore<>(mongoTemplate, entityClass, entityIDField, collectionName);
         this.mutexes = new MongodbMutexes(mongoTemplate, collectionName, 30000L);
